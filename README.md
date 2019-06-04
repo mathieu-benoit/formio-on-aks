@@ -60,26 +60,37 @@ az storage account keys list \
 
 # Setup AKS
 
+```
 location=canadacentral
-name=formiodev
+rg=yourrgname
+aks=youraksname
 
 # Create the resource group
-az group create -l $location -n $name
+az group create \
+    -l $location \
+    -n $rg
 
 #This is to prevent the group from being deleted. If you need to delete, change the word create with delete
-az group lock create --lock-type CanNotDelete -n CanNotDelete$name -g $name
-
-# Create an ACR registry
-az acr create -n $name -g $name -l $location --sku Basic --admin-enabled true
+az group lock create \
+    --lock-type CanNotDelete \
+    -n CanNotDelete$name \
+    -g $rg
 
 # Setup the AKS cluster with Azure Monitor for containers enabled
-# --node-vm-size -s   for setting the of the VMs
 latestK8sVersion=$(az aks get-versions -l $location --query 'orchestrators[-1].orchestratorVersion' -o tsv)
-az aks create -l $location -n $name -g $name --generate-ssh-keys -k $latestK8sVersion -c 3
+az aks create \
+    -l $location \
+    -n $aks \
+    -g $rg \
+    --generate-ssh-keys \
+    -k $latestK8sVersion \
+    -c 3 \
+    -s Standard_DS2_v2
 
 # Once created (the creation could take ~10 min), get the credentials to interact with your AKS cluster
-az aks get-credentials -n $name -g $name
-
+az aks get-credentials \
+    -n $aks \
+    -g $rg
 
 #How to create a namespace
 kubectl create ns $name
@@ -89,6 +100,14 @@ kubectl run formio-redis \
   --image redis \
   -n $name \
   
+# Create an ACR registry
+acr=youracrname
+az acr create \
+    -n $acr \
+    -g $name \
+    -l $location \
+    --sku Basic \
+    --admin-enabled true
 
 #Grant the AKS-generated service principal pull access to ACR, the AKS cluster will be able to pull images from ACR
 CLIENT_ID=$(az aks show -g $name -n $name --query "servicePrincipalProfile.clientId" -o tsv)
@@ -102,10 +121,11 @@ az aks enable-addons -a monitoring -n $name -g $name
 kuredVersion=1.2.0
 kubectl apply -f https://github.com/weaveworks/kured/releases/download/$kuredVersion/kured-$kuredVersion-dockerhub.yaml
 az aks enable-addons -a monitoring -n $name -g $name
+```
 
+## Tips
 
-
-#tips
+```
 kubectl get nodes -o wide
 
 kubectl get pods
@@ -114,7 +134,7 @@ kubectl scale
 
 kubectl top nodes
 
-kubectl get pods -n $name
+kubectl get pods -n $namespace
 
 kubectl get all -n formiodev
 
@@ -123,7 +143,7 @@ kubectl get pods -o wide -n formiodev
 kubectl describe pod redis-785f9d6bfb-fbdpr -n $name  #what follows the redis is the pod name
 
 kubectl logs redis-785f9d6bfb-fbdpr -n $namec
-
+```
 
 #Manual process for image
 az acr show -n $name -g $name --query loginServer -o tsv
