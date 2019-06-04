@@ -199,26 +199,41 @@ kubectl expose deployment formio-redis \
   --type ClusterIP \
   --name redis
 
-# Maybe no Longer needed to expose it publicly since we have the Ingress Controller?
+# FIXME: Maybe no Longer needed to expose it publicly since we have the Ingress Controller?
 kubectl expose deployment formio-server \
   --port 80 \
   --type LoadBalancer \
   --name formio-server
 
+## Setup Ingress Controller
+
+```
+# Enable HTTP Application routing to get Nginx as Ingress Controller
 az aks enable-addons \
     -g $name \
     -n $name \
     -a http_application_routing
+```
 
+## Enable Day-2 features
+
+```
 # Enable Azure Monitor for containers
+# Associated doc: https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-overview
 az aks enable-addons \
     -a monitoring \
     -n $name \
     -g $name
 
+# Install Kured to automatically apply OS Patch update
+# Associated doc: https://docs.microsoft.com/en-us/azure/aks/http-application-routing
 kubectl apply -f https://github.com/weaveworks/kured/releases/download/1.2.0/kured-1.2.0-dockerhub.yaml
-
+```
 
 # Further considerations
 
 - Setup SSL on Nginx Ingress Controller based on this https://docs.microsoft.com/en-us/azure/aks/ingress-own-tls
+- Don't use `latest` tag for the Docker images you are leveraging here
+- Watch new version of:
+    - The Docker images you are using from `minio`, `redis`, `formio`, `kured`, etc.
+    - The Kubernetes versions
