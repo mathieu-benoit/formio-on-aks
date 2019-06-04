@@ -230,7 +230,7 @@ az aks enable-addons \
 kubectl apply -f https://github.com/weaveworks/kured/releases/download/1.2.0/kured-1.2.0-dockerhub.yaml
 ```
 
-# Further considerations
+# TODO / FIXME / Further considerations
 
 - Setup SSL on Nginx Ingress Controller based on this https://docs.microsoft.com/en-us/azure/aks/ingress-own-tls
 - Don't use `latest` tag for the Docker images you are leveraging here
