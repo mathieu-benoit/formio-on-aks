@@ -2,7 +2,7 @@
 
 Non official setup steps to have [form.io](https://www.form.io/) deployed on [Azure Kubernetes Service (AKS)](https://azure.microsoft.com/services/kubernetes-service/).
 
-Consideration and disclaimer: for the official deployment of form.io on Azure, you should follow the official documentation: https://help.form.io/tutorials/deployment/azure/. Associated to this, you could also find this snippet of the docker run commands if you are interested: https://gist.github.com/travist/b4e442b94339d9d973612b4df7b2124d
+Consideration and disclaimer: for the official deployment of form.io on Azure, you should follow the official documentation: https://help.form.io/tutorials/deployment/azure/. Associated to this, you could also find this snippet of the `docker run` commands which have been leveraged: https://gist.github.com/travist/b4e442b94339d9d973612b4df7b2124d
 
 Here is what we would do differently:
 
@@ -70,7 +70,7 @@ az group create \
     -l $location \
     -n $rg
 
-#This is to prevent the group from being deleted. If you need to delete, change the word create with delete
+#This is to prevent the group from being deleted
 az group lock create \
     --lock-type CanNotDelete \
     -n CanNotDelete$name \
@@ -93,13 +93,17 @@ az aks get-credentials \
     -g $rg
 
 #How to create a namespace
-kubectl create ns $name
+namespace=yourformiok8snamespace
+kubectl create ns $namespace
 
 kubectl run formio-redis \
   --port 6379 \
   --image redis \
   -n $name \
-  
+```
+
+# Setup ACR for the 
+
 # Create an ACR registry
 acr=youracrname
 az acr create \
@@ -112,7 +116,30 @@ az acr create \
 #Grant the AKS-generated service principal pull access to ACR, the AKS cluster will be able to pull images from ACR
 CLIENT_ID=$(az aks show -g $name -n $name --query "servicePrincipalProfile.clientId" -o tsv)
 ACR_ID=$(az acr show -n $acr -g $name --query "id" -o tsv)
-az role assignment create --assignee $CLIENT_ID --role acrpull --scope $ACR_ID
+az role assignment create \
+    --assignee $CLIENT_ID \
+    --role acrpull \
+    --scope $ACR_ID
+
+az acr show \
+    -n $acr \
+    -g $rg \
+    --query loginServer \
+    -o tsv
+
+az acr credential show \
+    -n $acr \
+    -g $rg \
+    --query passwords[0].value \
+    -o tsv
+
+docker login formiodev.azurecr.io \
+    -u formiodev \
+    -p xVan1ujUefSFKsS+QekMub4z55hdggMA
+
+docker tag formio/formio-files-core:latest formiodev.azurecr.io/formio-files-core:latest
+
+docker push formiodev.azurecr.io/formio-files-core:latest
 
 # Azure Monitor for containers
 az aks enable-addons -a monitoring -n $name -g $name
@@ -136,42 +163,24 @@ kubectl top nodes
 
 kubectl get pods -n $namespace
 
-kubectl get all -n formiodev
+kubectl get all -n $namespace
 
-kubectl get pods -o wide -n formiodev
+kubectl get pods -o wide -n $namespace
 
-kubectl describe pod redis-785f9d6bfb-fbdpr -n $name  #what follows the redis is the pod name
+kubectl describe pod <pod-name> -n $namespace
 
-kubectl logs redis-785f9d6bfb-fbdpr -n $namec
+kubectl logs <pod-name> -n $namespace
 ```
 
-#Manual process for image
-az acr show -n $name -g $name --query loginServer -o tsv
+## Deploy form.io Docker containers
 
-az acr credential show -n $name -g $name --query passwords[0].value -o tsv
-
-
-#Docker
-sudo docker login formiodev.azurecr.io -u formiodev -p xVan1ujUefSFKsS+QekMub4z55hdggMA
-
-sudo docker tag formio/formio-files-core:latest formiodev.azurecr.io/formio-files-core:latest
-
-sudo docker push formiodev.azurecr.io/formio-files-core:latest
-
-
-
-
+```
 kubectl run formio-minio \
   --env "MINIO_ACCESS_KEY=addatechformiodevsa" \
   --env "MINIO_SECRET_KEY===" \
   --port 9000 \
   --image minio/minio \
   -- gateway azure
-
-
-
-
-
 
 kubectl run formio-files-core \
 --env "FORMIO_SERVER=http://formio" \
@@ -188,7 +197,6 @@ kubectl run formio-files-core \
 --port 4005 \
 --image formiodev.azurecr.io/formio-files-core
 
-
 kubectl run formio-server \
 --env "FORMIO_FILES_SERVER=http://formio-files:4005" \
 --env "PORTAL_SECRET= " \
@@ -201,14 +209,10 @@ kubectl run formio-server \
 --port 3000 \
 --image formio/formio-enterprise
 
-
-
-
 kubectl expose deployment formio-files-core \
   --port 4005 \
   --type ClusterIP \
   --name formio-files
-
 
 kubectl expose deployment formio-minio \
   --type ClusterIP \
@@ -224,6 +228,7 @@ kubectl expose deployment formio-server \
   --port 80 \
   --type LoadBalancer \
   --name formio-server
+```
 
 ## Setup Ingress Controller
 
