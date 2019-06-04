@@ -11,7 +11,9 @@ Here is what we would do differently:
 - deploy redis as container on AKS instead of using the Azure Redis Service
 - leverage the Azure Monitor for containers add-on
 
-## Introduction
+ToC:
+
+- TODO
 
 ## CosmosDB and Blob Storage provisioning
 
