@@ -93,7 +93,7 @@ az aks get-credentials \
     -g $rg
 ```
 
-## Setup ACR for the 
+## Setup ACR for the formio/formio-files-core Docker image
 
 ```
 acr=youracrname
