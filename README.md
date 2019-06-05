@@ -13,7 +13,12 @@ Here is what we would do differently:
 
 ToC:
 
-- TODO
+- [CosmosDB and Blob Storage provisioning](#cosmosdb-and-blob-storage-provisioning)
+- [Setup AKS](#setup-aks)
+- [Setup ACR for the formio/formio-files-core Docker image](#setup-acr-for-the-formioformio-files-core-docker-image)
+- [Tips](#tips)
+- [Deploy form.io Docker containers](#deploy-formio-docker-containers)
+- [Setup Ingress Controller](#setup-ingress-controller)
 
 ## CosmosDB and Blob Storage provisioning
 
