@@ -19,6 +19,8 @@ ToC:
 - [Tips](#tips)
 - [Deploy form.io Docker containers](#deploy-formio-docker-containers)
 - [Setup Ingress Controller](#setup-ingress-controller)
+- [Enable Day-2 features](#enable-day-2-features)
+- [TODO / FIXME / Further considerations](#todo--fixme--further-considerations)
 
 ## CosmosDB and Blob Storage provisioning
 
