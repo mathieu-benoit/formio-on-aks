@@ -91,19 +91,11 @@ az aks create \
 az aks get-credentials \
     -n $aks \
     -g $rg
-
-#How to create a namespace
-namespace=yourformiok8snamespace
-kubectl create ns $namespace
-
-kubectl run formio-redis \
-  --port 6379 \
-  --image redis \
-  -n $name \
 ```
 
 ## Setup ACR for the 
 
+```
 acr=youracrname
 az acr create \
     -n $acr \
@@ -172,39 +164,51 @@ kubectl logs <pod-name> -n $namespace
 ## Deploy form.io Docker containers
 
 ```
+# Create a dedicated namespace where will reside your form.io related Docker containers
+namespace=yourformiok8snamespace
+kubectl create ns $namespace
+
+kubectl run formio-redis \
+  --port 6379 \
+  --image redis \
+  -n $namespace
+
 kubectl run formio-minio \
   --env "MINIO_ACCESS_KEY=addatechformiodevsa" \
   --env "MINIO_SECRET_KEY===" \
   --port 9000 \
   --image minio/minio \
+  -n $namespace \
   -- gateway azure
 
 kubectl run formio-files-core \
---env "FORMIO_SERVER=http://formio" \
---env "FORMIO_PROJECT=" \
---env "FORMIO_PROJECT_TOKEN=" \
---env "FORMIO_PDF_PROJECT=http://formiodev.9a84fabf5a1740ffaac0.canadacentral.aksapp.io/whatever-rbkwkreovgbtqbf" \
---env "FORMIO_PDF_APIKEY= " \
---env "FORMIO_S3_SERVER=minio" \
---env "FORMIO_S3_PORT=9000" \
---env "FORMIO_S3_BUCKET=formio" \
---env "FORMIO_S3_KEY=addatechformiodevsa" \
---env "FORMIO_S3_SECRET===" \
---env "FORMIO_VIEWER=https://cmcloudformioviewer.azurewebsites.net" \
---port 4005 \
---image formiodev.azurecr.io/formio-files-core
+    --env "FORMIO_SERVER=http://formio" \
+    --env "FORMIO_PROJECT=" \
+    --env "FORMIO_PROJECT_TOKEN=" \
+    --env "FORMIO_PDF_PROJECT=http://formiodev.9a84fabf5a1740ffaac0.canadacentral.aksapp.io/whatever-rbkwkreovgbtqbf" \
+    --env "FORMIO_PDF_APIKEY= " \
+    --env "FORMIO_S3_SERVER=minio" \
+    --env "FORMIO_S3_PORT=9000" \
+    --env "FORMIO_S3_BUCKET=formio" \
+    --env "FORMIO_S3_KEY=addatechformiodevsa" \
+    --env "FORMIO_S3_SECRET===" \
+    --env "FORMIO_VIEWER=https://cmcloudformioviewer.azurewebsites.net" \
+    --port 4005 \
+    --image formiodev.azurecr.io/formio-files-core \
+    -n $namespace
 
 kubectl run formio-server \
---env "FORMIO_FILES_SERVER=http://formio-files:4005" \
---env "PORTAL_SECRET= " \
---env "JWT_SECRET= " \
---env "DB_SECRET= " \
---env "MONGO= " \
---env "LICENSE=.. " \
---env "ADMIN_KEY=" \
---env "PRIMARY=1" \
---port 3000 \
---image formio/formio-enterprise
+    --env "FORMIO_FILES_SERVER=http://formio-files:4005" \
+    --env "PORTAL_SECRET= " \
+    --env "JWT_SECRET= " \
+    --env "DB_SECRET= " \
+    --env "MONGO= " \
+    --env "LICENSE=.. " \
+    --env "ADMIN_KEY=" \
+    --env "PRIMARY=1" \
+    --port 3000 \
+    --image formio/formio-enterprise \
+    -n $namespace
 
 kubectl expose deployment formio-files-core \
   --port 4005 \
