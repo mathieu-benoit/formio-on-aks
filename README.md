@@ -26,9 +26,9 @@ ToC:
 
 ```
 location=eastus
-rg=rgName
-cosmosDb=cosmosDbName
-storage=storageName
+rg=yourRgName
+cosmosDb=yourCosmosDbName
+storage=yourStorageName
 
 #Create the CosmosDB
 az cosmosdb create \
@@ -53,8 +53,6 @@ az storage account create \
 # Setup AKS
 
 ```
-location=canadacentral
-rg=yourrgname
 aks=youraksname
 
 # Create the resource group
