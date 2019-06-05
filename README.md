@@ -244,6 +244,7 @@ kubectl expose deployment formio-server \
 
 ```
 # Enable HTTP Application routing to get Nginx as Ingress Controller
+# Associated doc: https://docs.microsoft.com/azure/aks/http-application-routing
 az aks enable-addons \
     -g $rg \
     -n $aks \
@@ -257,14 +258,14 @@ kubectl apply -f https://raw.githubusercontent.com/mathieu-benoit/formio-on-aks/
 
 ```
 # Enable Azure Monitor for containers
-# Associated doc: https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-overview
+# Associated doc: https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-overview
 az aks enable-addons \
     -a monitoring \
     -n $aks \
     -g $rg
 
 # Install Kured to automatically apply OS Patch update
-# Associated doc: https://docs.microsoft.com/en-us/azure/aks/http-application-routing
+# Associated doc: https://docs.microsoft.com/azure/aks/node-updates-kured
 kuredVersion=1.2.0
 kubectl apply \
     -f https://github.com/weaveworks/kured/releases/download/$kuredVersion/kured-$kuredVersion-dockerhub.yaml
