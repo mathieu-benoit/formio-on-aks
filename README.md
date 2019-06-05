@@ -102,6 +102,8 @@ az aks get-credentials \
 
 ## Setup ACR for the formio/formio-files-core Docker image
 
+This part is all about making available the `formio/formio-files-core` Docker image to AKS cluster via a private Azure Container Registry (ACR). This docker image is not available publicly here: https://hub.docker.com/u/formio. According to this doc: https://help.form.io/userguide/pdfserver/#deploy-the-pdf-server you need to “have a Docker Hub account, and send that to the Form.io team so that we can provide you read access to the PDF server repository”. On that regard we will pull locally this Docker image with DockerID whitelisted and then we will push that image in a private ACR.
+
 ```
 acr=youracrname
 az acr create \
@@ -222,22 +224,26 @@ kubectl run formio-server \
 kubectl expose deployment formio-files-core \
     --port 4005 \
     --type ClusterIP \
-    --name formio-files
+    --name formio-files \
+    -n $namespace
 
 kubectl expose deployment formio-minio \
     --type ClusterIP \
-    --name minio
+    --name minio \
+    -n $namespace
 
 kubectl expose deployment formio-redis \
     --port 6379 \
     --type ClusterIP \
-    --name redis
+    --name redis \
+    -n $namespace
 
 # FIXME: Maybe no Longer needed to expose it publicly since we have the Ingress Controller?
 kubectl expose deployment formio-server \
     --port 80 \
     --type LoadBalancer \
-    --name formio-server
+    --name formio-server \
+    -n $namespace
 ```
 
 ## Setup Ingress Controller
