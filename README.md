@@ -19,7 +19,7 @@ ToC:
 - [Tips](#tips)
 - [Deploy form.io Docker containers](#deploy-formio-docker-containers)
 - [Setup Ingress Controller](#setup-ingress-controller)
-- [Enable Day-2 features](#enable-day-2-features)
+- [Leverage Day-2 features](#leverage-day-2-features)
 - [TODO / FIXME / Further considerations](#todo--fixme--further-considerations)
 
 ## CosmosDB and Blob Storage provisioning
@@ -76,12 +76,6 @@ aks=youraksname
 az group create \
     -l $location \
     -n $rg
-
-#This is to prevent the group from being deleted
-az group lock create \
-    --lock-type CanNotDelete \
-    -n CanNotDelete$name \
-    -g $rg
 
 # Setup the AKS cluster with Azure Monitor for containers enabled
 latestK8sVersion=$(az aks get-versions -l $location --query 'orchestrators[-1].orchestratorVersion' -o tsv)
@@ -279,9 +273,15 @@ spec:
 EOF
 ```
 
-## Enable Day-2 features
+## Leverage Day-2 features
 
 ```
+#Lock the Resource Group where the AKS cluster and other Azure service reside to prevent it from being deleted
+az group lock create \
+    --lock-type CanNotDelete \
+    -n CanNotDelete$name \
+    -g $rg
+
 # Enable Azure Monitor for containers
 # Associated doc: https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-overview
 az aks enable-addons \
