@@ -171,42 +171,42 @@ namespace=yourformiok8snamespace
 kubectl create ns $namespace
 
 kubectl run formio-redis \
-  --port 6379 \
-  --image redis \
-  -n $namespace
+    --port 6379 \
+    --image redis \
+    -n $namespace
 
 kubectl run formio-minio \
-  --env "MINIO_ACCESS_KEY=addatechformiodevsa" \
-  --env "MINIO_SECRET_KEY===" \
-  --port 9000 \
-  --image minio/minio \
-  -n $namespace \
-  -- gateway azure
+    --env "MINIO_ACCESS_KEY=FIXME" \
+    --env "MINIO_SECRET_KEY=FIXME" \
+    --port 9000 \
+    --image minio/minio \
+    -n $namespace \
+    -- gateway azure
 
 kubectl run formio-files-core \
     --env "FORMIO_SERVER=http://formio" \
-    --env "FORMIO_PROJECT=" \
-    --env "FORMIO_PROJECT_TOKEN=" \
-    --env "FORMIO_PDF_PROJECT=http://formiodev.9a84fabf5a1740ffaac0.canadacentral.aksapp.io/whatever-rbkwkreovgbtqbf" \
-    --env "FORMIO_PDF_APIKEY= " \
+    --env "FORMIO_PROJECT=FIXME" \
+    --env "FORMIO_PROJECT_TOKEN=FIXME" \
+    --env "FORMIO_PDF_PROJECT=FIXME" \
+    --env "FORMIO_PDF_APIKEY=FIXME" \
     --env "FORMIO_S3_SERVER=minio" \
     --env "FORMIO_S3_PORT=9000" \
     --env "FORMIO_S3_BUCKET=formio" \
-    --env "FORMIO_S3_KEY=addatechformiodevsa" \
-    --env "FORMIO_S3_SECRET===" \
-    --env "FORMIO_VIEWER=https://cmcloudformioviewer.azurewebsites.net" \
+    --env "FORMIO_S3_KEY=FIXME" \
+    --env "FORMIO_S3_SECRET=FIXME" \
+    --env "FORMIO_VIEWER=FIXME" \
     --port 4005 \
-    --image formiodev.azurecr.io/formio-files-core \
+    --image $acrServer/formio-files-core \
     -n $namespace
 
 kubectl run formio-server \
     --env "FORMIO_FILES_SERVER=http://formio-files:4005" \
-    --env "PORTAL_SECRET= " \
-    --env "JWT_SECRET= " \
-    --env "DB_SECRET= " \
-    --env "MONGO= " \
-    --env "LICENSE=.. " \
-    --env "ADMIN_KEY=" \
+    --env "PORTAL_SECRET=FIXME" \
+    --env "JWT_SECRET=FIXME" \
+    --env "DB_SECRET=FIXME" \
+    --env "MONGO=FIXME" \
+    --env "LICENSE=FIXME" \
+    --env "ADMIN_KEY=FIXME" \
     --env "PRIMARY=1" \
     --port 3000 \
     --image formio/formio-enterprise \
