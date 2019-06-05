@@ -241,6 +241,9 @@ az aks enable-addons \
     -g $rg \
     -n $aks \
     -a http_application_routing
+    
+# Enable CORS with the nginx Ingress Controller
+kubectl apply -f https://raw.githubusercontent.com/mathieu-benoit/formio-on-aks/master/ingress.yaml
 ```
 
 ## Enable Day-2 features
@@ -266,4 +269,4 @@ kubectl apply \
 - Don't use `latest` tag for the Docker images you are leveraging here
 - Watch new version of:
     - The Docker images you are using from `minio`, `redis`, `formio`, `kured`, etc.
-    - The Kubernetes versions
+    - The Kubernetes versions by running `az aks get-versions` and then `az aks upgrade`
