@@ -105,8 +105,8 @@ az acr create \
     --admin-enabled true
 
 #Grant the AKS-generated service principal pull access to ACR, the AKS cluster will be able to pull images from ACR
-CLIENT_ID=$(az aks show -g $rg -n $aks --query "servicePrincipalProfile.clientId" -o tsv)
-ACR_ID=$(az acr show -n $acr -g $rg --query "id" -o tsv)
+CLIENT_ID=$(az aks show -g $rg -n $aks --query servicePrincipalProfile.clientId -o tsv)
+ACR_ID=$(az acr show -n $acr -g $rg --query id -o tsv)
 az role assignment create \
     --assignee $CLIENT_ID \
     --role acrpull \
@@ -130,13 +130,15 @@ acrPassword=$(az acr credential show \
     --query passwords[0].value \
     -o tsv)
 
+#you need here to ssh to the machine who previously pulled the formio/formio-files-core Docker image (DockerID whitelisted by form.io)
+
 docker login $acrServer \
     -u $acrUserName \
     -p $acrPassword
 
-docker tag formio/formio-files-core:latest formiodev.azurecr.io/formio-files-core:latest
+docker tag formio/formio-files-core:latest $acrServer/formio-files-core:latest
 
-docker push formiodev.azurecr.io/formio-files-core:latest
+docker push $acrServer/formio-files-core:latest
 ```
 
 ## Tips
