@@ -102,40 +102,45 @@ kubectl run formio-redis \
   -n $name \
 ```
 
-# Setup ACR for the 
+## Setup ACR for the 
 
-# Create an ACR registry
 acr=youracrname
 az acr create \
     -n $acr \
-    -g $name \
+    -g $rg \
     -l $location \
     --sku Basic \
     --admin-enabled true
 
 #Grant the AKS-generated service principal pull access to ACR, the AKS cluster will be able to pull images from ACR
-CLIENT_ID=$(az aks show -g $name -n $name --query "servicePrincipalProfile.clientId" -o tsv)
-ACR_ID=$(az acr show -n $acr -g $name --query "id" -o tsv)
+CLIENT_ID=$(az aks show -g $rg -n $aks --query "servicePrincipalProfile.clientId" -o tsv)
+ACR_ID=$(az acr show -n $acr -g $rg --query "id" -o tsv)
 az role assignment create \
     --assignee $CLIENT_ID \
     --role acrpull \
     --scope $ACR_ID
 
-az acr show \
+acrServer=$(az acr show \
     -n $acr \
     -g $rg \
     --query loginServer \
-    -o tsv
+    -o tsv)
 
-az acr credential show \
+acrUserName=$(az acr credential show \
+    -n $acr \
+    -g $rg \
+    --query username \
+    -o tsv)
+    
+acrPassword=$(az acr credential show \
     -n $acr \
     -g $rg \
     --query passwords[0].value \
-    -o tsv
+    -o tsv)
 
-docker login formiodev.azurecr.io \
-    -u formiodev \
-    -p xVan1ujUefSFKsS+QekMub4z55hdggMA
+docker login $acrServer \
+    -u $acrUserName \
+    -p $acrPassword
 
 docker tag formio/formio-files-core:latest formiodev.azurecr.io/formio-files-core:latest
 
