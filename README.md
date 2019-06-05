@@ -39,13 +39,6 @@ az cosmosdb create \
 
 #+ Enable manually the Preview feature "MongoDB Aggregaton Pipeline"
 #https://docs.microsoft.com/en-us/azure/cosmos-db/mongodb-feature-support#aggregation-pipeline
-
-#Get the CosmosDB connection string
-az cosmosdb list-connection-strings \
-    -n $cosmosDb \
-    -g $rg \
-    --query "connectionStrings[0].connectionString" \
-    -o tsv
     
 #Create the Blob storage
 az storage account create \
@@ -55,14 +48,6 @@ az storage account create \
     --kind BlobStorage \
     --sku Standard_LRS \
     --https-only true \
-    
-#Get Blob storage access key
-az storage account keys list \
-    -g $rg \
-    -n $storage \
-    --query [0].value \
-    -o tsv
-    --access-tier hot 
 ```
 
 # Setup AKS
@@ -179,8 +164,8 @@ kubectl run formio-redis \
     -n $namespace
 
 kubectl run formio-minio \
-    --env "MINIO_ACCESS_KEY=FIXME" \
-    --env "MINIO_SECRET_KEY=FIXME" \
+    --env "MINIO_ACCESS_KEY=$storage" \
+    --env "MINIO_SECRET_KEY=$(az storage account keys list -g $rg -n $storage --query [0].value -o tsv)" \
     --port 9000 \
     --image minio/minio \
     -n $namespace \
@@ -195,8 +180,8 @@ kubectl run formio-files-core \
     --env "FORMIO_S3_SERVER=minio" \
     --env "FORMIO_S3_PORT=9000" \
     --env "FORMIO_S3_BUCKET=formio" \
-    --env "FORMIO_S3_KEY=FIXME" \
-    --env "FORMIO_S3_SECRET=FIXME" \
+    --env "FORMIO_S3_KEY=$storage" \
+    --env "FORMIO_S3_SECRET=$(az storage account keys list -g $rg -n $storage --query [0].value -o tsv)" \
     --env "FORMIO_VIEWER=FIXME" \
     --port 4005 \
     --image $acrServer/formio-files-core \
@@ -207,7 +192,7 @@ kubectl run formio-server \
     --env "PORTAL_SECRET=FIXME" \
     --env "JWT_SECRET=FIXME" \
     --env "DB_SECRET=FIXME" \
-    --env "MONGO=FIXME" \
+    --env "MONGO=$(az cosmosdb list-connection-strings -n $cosmosDb -g $rg --query "connectionStrings[0].connectionString" -o tsv)" \
     --env "LICENSE=FIXME" \
     --env "ADMIN_KEY=FIXME" \
     --env "PRIMARY=1" \
