@@ -257,7 +257,7 @@ az aks enable-addons \
     -a http_application_routing
     
 # Enable CORS with the nginx Ingress Controller
-k apply -f - <<EOF
+kubectl apply -n $namespace -f - <<EOF
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -304,3 +304,4 @@ kubectl apply \
 - Watch new version of:
     - The Docker images you are using from `minio`, `redis`, `formio`, `kured`, etc.
     - The Kubernetes versions by running `az aks get-versions` and then `az aks upgrade`
+- Leverage Helm chart instead of `kubectl run|expose|apply`
