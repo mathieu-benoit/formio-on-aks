@@ -213,24 +213,24 @@ kubectl run formio-server \
     -n $namespace
 
 kubectl expose deployment formio-files-core \
-  --port 4005 \
-  --type ClusterIP \
-  --name formio-files
+    --port 4005 \
+    --type ClusterIP \
+    --name formio-files
 
 kubectl expose deployment formio-minio \
-  --type ClusterIP \
-  --name minio
+    --type ClusterIP \
+    --name minio
 
 kubectl expose deployment formio-redis \
-  --port 6379 \
-  --type ClusterIP \
-  --name redis
+    --port 6379 \
+    --type ClusterIP \
+    --name redis
 
 # FIXME: Maybe no Longer needed to expose it publicly since we have the Ingress Controller?
 kubectl expose deployment formio-server \
-  --port 80 \
-  --type LoadBalancer \
-  --name formio-server
+    --port 80 \
+    --type LoadBalancer \
+    --name formio-server
 ```
 
 ## Setup Ingress Controller
