@@ -140,14 +140,6 @@ docker login formiodev.azurecr.io \
 docker tag formio/formio-files-core:latest formiodev.azurecr.io/formio-files-core:latest
 
 docker push formiodev.azurecr.io/formio-files-core:latest
-
-# Azure Monitor for containers
-az aks enable-addons -a monitoring -n $name -g $name
-
-# Kured
-kuredVersion=1.2.0
-kubectl apply -f https://github.com/weaveworks/kured/releases/download/$kuredVersion/kured-$kuredVersion-dockerhub.yaml
-az aks enable-addons -a monitoring -n $name -g $name
 ```
 
 ## Tips
@@ -235,8 +227,8 @@ kubectl expose deployment formio-server \
 ```
 # Enable HTTP Application routing to get Nginx as Ingress Controller
 az aks enable-addons \
-    -g $name \
-    -n $name \
+    -g $rg \
+    -n $aks \
     -a http_application_routing
 ```
 
@@ -247,12 +239,14 @@ az aks enable-addons \
 # Associated doc: https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-overview
 az aks enable-addons \
     -a monitoring \
-    -n $name \
-    -g $name
+    -n $aks \
+    -g $rg
 
 # Install Kured to automatically apply OS Patch update
 # Associated doc: https://docs.microsoft.com/en-us/azure/aks/http-application-routing
-kubectl apply -f https://github.com/weaveworks/kured/releases/download/1.2.0/kured-1.2.0-dockerhub.yaml
+kuredVersion=1.2.0
+kubectl apply \
+    -f https://github.com/weaveworks/kured/releases/download/$kuredVersion/kured-$kuredVersion-dockerhub.yaml
 ```
 
 # TODO / FIXME / Further considerations
