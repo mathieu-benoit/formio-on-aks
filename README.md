@@ -7,9 +7,9 @@ Consideration and disclaimer: for the official deployment of form.io on Azure, y
 Here is what we would do differently:
 
 - use Azure CLI commands to create services instead of using the Azure portal
-- host the containers on AKS instead on pure VMs
+- host the containers on AKS instead of on pure VMs
 - deploy redis as container on AKS instead of using the Azure Redis Service
-- leverage the Azure Monitor for containers add-on
+- leverage the Azure Monitor for containers (monitoring) and Kured (patch OS)
 
 ToC:
 
@@ -251,7 +251,27 @@ az aks enable-addons \
     -a http_application_routing
     
 # Enable CORS with the nginx Ingress Controller
-kubectl apply -f https://raw.githubusercontent.com/mathieu-benoit/formio-on-aks/master/ingress.yaml
+k apply -f - <<EOF
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: formiodev
+  annotations: 
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token"
+    kubernetes.io/ingress.class: addon-http-application-routing
+spec:
+  rules:
+  - host: formiodev.<CLUSTER_SPECIFIC_DNS_ZONE>
+    http:
+      paths:
+      - backend:
+          serviceName: formio-server
+          servicePort: 80
+        path: /
+EOF
 ```
 
 ## Enable Day-2 features
