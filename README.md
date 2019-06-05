@@ -238,10 +238,9 @@ kubectl expose deployment formio-redis \
     --name redis \
     -n $namespace
 
-# FIXME: Maybe no Longer needed to expose it publicly since we have the Ingress Controller?
 kubectl expose deployment formio-server \
     --port 80 \
-    --type LoadBalancer \
+    --type ClusterIP \
     --name formio-server \
     -n $namespace
 ```
