@@ -140,6 +140,8 @@ kubectl top nodes
 
 kubectl get pods -n $namespace
 
+kubectl top pods -n $namespace
+
 kubectl get all -n $namespace
 
 kubectl get pods -o wide -n $namespace
@@ -218,7 +220,7 @@ kubectl expose deployment formio-redis \
 kubectl expose deployment formio-server \
     --port 80 \
     --type ClusterIP \
-    --name formio-server \
+    --name formio \
     -n $namespace
 ```
 
@@ -250,7 +252,7 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: formio-server
+          serviceName: formio
           servicePort: 80
         path: /
 EOF
