@@ -158,17 +158,19 @@ kubectl logs <pod-name> -n $namespace
 namespace=yourformiok8snamespace
 kubectl create ns $namespace
 
+kubectl config set-context \
+    --current \
+    --namespace $namespace
+
 kubectl run formio-redis \
     --port 6379 \
-    --image redis \
-    -n $namespace
+    --image redis
 
 kubectl run formio-minio \
     --env "MINIO_ACCESS_KEY=$storage" \
     --env "MINIO_SECRET_KEY=$(az storage account keys list -g $rg -n $storage --query [0].value -o tsv)" \
     --port 9000 \
     --image minio/minio \
-    -n $namespace \
     -- gateway azure
 
 kubectl run formio-files-core \
@@ -184,8 +186,7 @@ kubectl run formio-files-core \
     --env "FORMIO_S3_SECRET=$(az storage account keys list -g $rg -n $storage --query [0].value -o tsv)" \
     --env "FORMIO_VIEWER=FIXME" \
     --port 4005 \
-    --image $acrServer/formio-files-core \
-    -n $namespace
+    --image $acrServer/formio-files-core
 
 kubectl run formio-server \
     --env "FORMIO_FILES_SERVER=http://formio-files:4005" \
@@ -197,31 +198,26 @@ kubectl run formio-server \
     --env "ADMIN_KEY=FIXME" \
     --env "PRIMARY=1" \
     --port 3000 \
-    --image formio/formio-enterprise \
-    -n $namespace
+    --image formio/formio-enterprise
 
 kubectl expose deployment formio-files-core \
     --port 4005 \
     --type ClusterIP \
-    --name formio-files \
-    -n $namespace
+    --name formio-files
 
 kubectl expose deployment formio-minio \
     --type ClusterIP \
-    --name minio \
-    -n $namespace
+    --name minio
 
 kubectl expose deployment formio-redis \
     --port 6379 \
     --type ClusterIP \
-    --name redis \
-    -n $namespace
+    --name redis
 
 kubectl expose deployment formio-server \
     --port 80 \
     --type ClusterIP \
-    --name formio \
-    -n $namespace
+    --name formio
 ```
 
 ## Setup Ingress Controller
@@ -235,7 +231,7 @@ az aks enable-addons \
     -a http_application_routing
     
 # Enable CORS with the nginx Ingress Controller
-kubectl apply -n $namespace -f - <<EOF
+kubectl apply -f - <<EOF
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
