@@ -118,13 +118,17 @@ acrPassword=$(az acr credential show \
 
 #you need here to ssh to the machine who previously pulled the formio/formio-files-core Docker image (DockerID whitelisted by form.io)
 
+# Get the Docker fomrio-files-core image tag/version
+# FIXME: shouldn't be latest, that should come from (not the right value as of 2019-10-11): curl http://files.form.io/status | jq .version -r
+formioFilesCoreVersion=latest
+
 docker login $acrServer \
     -u $acrUserName \
     -p $acrPassword
 
-docker tag formio/formio-files-core:latest $acrServer/formio-files-core:latest
+docker tag formio/formio-files-core:$formioFilesCoreVersion $acrServer/formio-files-core:$formioFilesCoreVersion
 
-docker push $acrServer/formio-files-core:latest
+docker push $acrServer/formio-files-core:$formioFilesCoreVersion
 ```
 
 ## Tips
@@ -154,6 +158,16 @@ kubectl logs <pod-name> -n $namespace
 ## Deploy form.io Docker containers
 
 ```
+#Setup of the Docker image versins/tags
+# Taken from https://hub.docker.com/_/redis
+redisVersion=5.0.6
+# Taken from https://hub.docker.com/r/minio/minio
+# FIXME: shouldn't be latest
+minioVersion=latest
+# Taken from https://hub.docker.com/r/formio/formio-enterprise
+# To get the latest version you could run: curl http://api.form.io/status | jq .version -r
+formioEnterpriseVersion=6.7.8
+
 # Create a dedicated namespace where will reside your form.io related Docker containers
 namespace=yourformiok8snamespace
 kubectl create ns $namespace
@@ -164,13 +178,13 @@ kubectl config set-context \
 
 kubectl run formio-redis \
     --port 6379 \
-    --image redis
+    --image redis:$redisVersion
 
 kubectl run formio-minio \
     --env "MINIO_ACCESS_KEY=$storage" \
     --env "MINIO_SECRET_KEY=$(az storage account keys list -g $rg -n $storage --query [0].value -o tsv)" \
     --port 9000 \
-    --image minio/minio \
+    --image minio/minio:$minioVersion \
     -- gateway azure
 
 kubectl run formio-files-core \
@@ -186,7 +200,7 @@ kubectl run formio-files-core \
     --env "FORMIO_S3_SECRET=$(az storage account keys list -g $rg -n $storage --query [0].value -o tsv)" \
     --env "FORMIO_VIEWER=FIXME" \
     --port 4005 \
-    --image $acrServer/formio-files-core
+    --image $acrServer/formio-files-core:$formioFilesCoreVersion
 
 kubectl run formio-server \
     --env "FORMIO_FILES_SERVER=http://formio-files:4005" \
@@ -198,7 +212,7 @@ kubectl run formio-server \
     --env "ADMIN_KEY=FIXME" \
     --env "PRIMARY=1" \
     --port 3000 \
-    --image formio/formio-enterprise
+    --image formio/formio-enterprise:$formioEnterpriseVersion
 
 kubectl expose deployment formio-files-core \
     --port 4005 \
@@ -280,8 +294,7 @@ kubectl apply \
 # TODO / FIXME / Further considerations
 
 - Setup SSL on Nginx Ingress Controller based on this https://docs.microsoft.com/en-us/azure/aks/ingress-own-tls
-- Don't use `latest` tag for the Docker images you are leveraging here
 - Watch new version of:
     - The Docker images you are using from `minio`, `redis`, `formio`, `kured`, etc.
     - The Kubernetes versions by running `az aks get-versions` and then `az aks upgrade`
-- Leverage Helm chart instead of `kubectl run|expose|apply`
+- Leverage K8S YAML files or Helm chart instead of `kubectl run|expose` commands
