@@ -90,13 +90,11 @@ az acr create \
     --sku Basic \
     --admin-enabled true
 
-#Grant the AKS-generated service principal pull access to ACR, the AKS cluster will be able to pull images from ACR
-CLIENT_ID=$(az aks show -g $rg -n $aks --query servicePrincipalProfile.clientId -o tsv)
-ACR_ID=$(az acr show -n $acr -g $rg --query id -o tsv)
-az role assignment create \
-    --assignee $CLIENT_ID \
-    --role acrpull \
-    --scope $ACR_ID
+#All AKS to be able to pull images from ACR
+az aks update \
+    -g $rg \
+    -n $aks \
+    --attach-acr $acr
 
 acrServer=$(az acr show \
     -n $acr \
