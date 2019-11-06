@@ -164,7 +164,7 @@ redisVersion=5.0.6
 minioVersion=latest
 # Taken from https://hub.docker.com/r/formio/formio-enterprise
 # To get the latest version you could run: curl http://api.form.io/status | jq .version -r
-formioEnterpriseVersion=6.7.12
+formioEnterpriseVersion=6.7.13
 
 # Create a dedicated namespace where will reside your form.io related Docker containers
 namespace=yourformiok8snamespace
