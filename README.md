@@ -232,14 +232,14 @@ kubectl expose deployment formio-server \
 ## Setup Ingress Controller
 
 ```
-# Enable HTTP Application routing to get Nginx as Ingress Controller
-# Associated doc: https://docs.microsoft.com/azure/aks/http-application-routing
-az aks enable-addons \
-    -g $rg \
-    -n $aks \
-    -a http_application_routing
+# Install Nginx as Ingress Controller
+# You need to configure Helm prior to run the command below: https://docs.microsoft.com/azure/aks/kubernetes-helm
+helm install stable/nginx-ingress \
+    --set controller.replicaCount=2 \
+    --set controller.nodeSelector."beta\.kubernetes\.io/os"=linux \
+    --set defaultBackend.nodeSelector."beta\.kubernetes\.io/os"=linux
     
-# Enable CORS with the nginx Ingress Controller
+# Create a dedicated Ingress making the binding between your Service and the this Nginx Ingress Controller
 kubectl apply -f - <<EOF
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -250,7 +250,7 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
     nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token, x-allow, x-expire"
-    kubernetes.io/ingress.class: addon-http-application-routing
+    kubernetes.io/ingress.class: nginx
 spec:
   rules:
   - host: formiodev.<CLUSTER_SPECIFIC_DNS_ZONE>
