@@ -36,9 +36,6 @@ az cosmosdb create \
     -g $rg \
     -n $cosmosDb \
     --locations $location=0
-
-#+ Enable manually the Preview feature "MongoDB Aggregaton Pipeline"
-#https://docs.microsoft.com/en-us/azure/cosmos-db/mongodb-feature-support#aggregation-pipeline
     
 #Create the Blob storage
 az storage account create \
