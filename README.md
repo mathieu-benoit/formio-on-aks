@@ -251,9 +251,10 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
     nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token, x-allow, x-expire"
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
 spec:
   rules:
-  - host: formiodev.<CLUSTER_SPECIFIC_DNS_ZONE>
+  - host: formiodev.<YOUR_DNS>
     http:
       paths:
       - backend:
@@ -262,6 +263,45 @@ spec:
         path: /
 EOF
 ```
+
+## Setup HTTPS
+
+```
+# You need to create a Secret with the associated .key and .crt files of your own TLS certificate
+kubectl create secret tls aks-ingress-tls \
+    --key aks-ingress-tls.key \
+    --cert aks-ingress-tls.crt
+
+# Update the previous Ingress definition by adding the TLS section
+kubectl apply -f - <<EOF
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: formiodev
+  annotations: 
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token, x-allow, x-expire"
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  tls:
+  - hosts:
+    - formiodev.<YOUR_DNS>
+    secretName: aks-ingress-tls
+  rules:
+  - host: formiodev.<YOUR_DNS>
+    http:
+      paths:
+      - backend:
+          serviceName: formio
+          servicePort: 80
+        path: /
+EOF
+```
+
+You could now test this setup by following those instructions: https://docs.microsoft.com/azure/aks/ingress-own-tls#test-the-ingress-configuration
 
 ## Leverage Day-2 features
 
@@ -288,8 +328,8 @@ kubectl apply \
 
 # TODO / FIXME / Further considerations
 
-- Setup SSL on Nginx Ingress Controller based on this https://docs.microsoft.com/en-us/azure/aks/ingress-own-tls
 - Watch new version of:
     - The Docker images you are using from `minio`, `redis`, `formio`, `kured`, etc.
     - The Kubernetes versions by running `az aks get-versions` and then `az aks upgrade`
 - Leverage K8S YAML files or Helm chart instead of `kubectl run|expose` commands
+- Leverage Terraform to deploy the Infrastructure instead of using the Azure CLI
