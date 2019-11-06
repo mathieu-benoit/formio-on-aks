@@ -19,6 +19,7 @@ ToC:
 - [Tips](#tips)
 - [Deploy form.io Docker containers](#deploy-formio-docker-containers)
 - [Setup Ingress Controller](#setup-ingress-controller)
+- [Setup HTTPS](#setup-https)
 - [Leverage Day-2 features](#leverage-day-2-features)
 - [TODO / FIXME / Further considerations](#todo--fixme--further-considerations)
 
@@ -47,7 +48,7 @@ az storage account create \
     --https-only true \
 ```
 
-# Setup AKS
+## Setup AKS
 
 ```
 aks=youraksname
