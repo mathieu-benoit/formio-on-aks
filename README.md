@@ -191,6 +191,7 @@ kubectl run formio-files-core \
     --env "FORMIO_PDF_PROJECT=FIXME" \
     --env "FORMIO_PDF_APIKEY=FIXME" \
     --env "FORMIO_S3_SERVER=minio" \
+    --env "FORMIO_S3_REGION=$location" \
     --env "FORMIO_S3_PORT=9000" \
     --env "FORMIO_S3_BUCKET=formio" \
     --env "FORMIO_S3_KEY=$storage" \
