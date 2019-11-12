@@ -301,6 +301,10 @@ spec:
           serviceName: formio
           servicePort: 80
         path: /
+      - backend:
+          serviceName: formio-files
+          servicePort: 4005
+        path: /files/
 EOF
 ```
 
