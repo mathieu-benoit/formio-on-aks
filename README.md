@@ -267,7 +267,7 @@ spec:
       - backend:
           serviceName: formio-files
           servicePort: 4005
-        path: /files/
+        path: /files/(.*)$
 EOF
 ```
 
@@ -308,7 +308,7 @@ spec:
       - backend:
           serviceName: formio-files
           servicePort: 4005
-        path: /files/
+        path: /files/(.*)$
 EOF
 ```
 
