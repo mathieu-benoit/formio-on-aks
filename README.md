@@ -237,10 +237,10 @@ kubectl expose deployment formio-server \
 ```
 # Install Nginx as Ingress Controller
 # You need to configure Helm prior to run the command below: https://docs.microsoft.com/azure/aks/kubernetes-helm
-helm install stable/nginx-ingress \
-    --set controller.replicaCount=2 \
-    --set controller.nodeSelector."beta\.kubernetes\.io/os"=linux \
-    --set defaultBackend.nodeSelector."beta\.kubernetes\.io/os"=linux
+#Make sure you have the latest version of the stable Helm repo, especially since we need the nginx-ingress version > 0.22.0
+helm repo update stable
+# Install Nginx
+helm install stable/nginx-ingress
     
 # Create a dedicated Ingress making the binding between your Service and the this Nginx Ingress Controller
 kubectl apply -f - <<EOF
@@ -253,8 +253,8 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
     nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token, x-allow, x-expire"
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
   - host: formiodev.<YOUR_DNS>
@@ -290,8 +290,8 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
     nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token, x-allow, x-expire"
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   tls:
   - hosts:
