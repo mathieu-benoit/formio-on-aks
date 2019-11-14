@@ -240,7 +240,7 @@ kubectl expose deployment formio-server \
 #Make sure you have the latest version of the stable Helm repo, especially since we need the nginx-ingress version > 0.22.0
 helm repo update stable
 # Install Nginx
-helm install stable/nginx-ingress
+helm install -n formio-ingress stable/nginx-ingress
     
 # Create a dedicated Ingress making the binding between your Service and the this Nginx Ingress Controller
 kubectl apply -f - <<EOF
