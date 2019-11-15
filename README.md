@@ -243,7 +243,7 @@ helm repo update stable
 helm install -n formio-ingress stable/nginx-ingress
     
 # Create a dedicated Ingress making the binding between your Service and the this Nginx Ingress Controller
-kubectl apply -f - <<EOF
+kubectl create -f - <<EOF
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -254,7 +254,7 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
     nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token, x-allow, x-expire"
     kubernetes.io/ingress.class: "nginx"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/rewrite-target: "/$2"
 spec:
   rules:
   - host: formiodev.<YOUR_DNS>
@@ -280,7 +280,7 @@ kubectl create secret tls aks-ingress-tls \
     --cert aks-ingress-tls.crt
 
 # Update the previous Ingress definition by adding the TLS section
-kubectl apply -f - <<EOF
+kubectl create -f - <<EOF
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -291,7 +291,7 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
     nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token, x-allow, x-expire"
     kubernetes.io/ingress.class: "nginx"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/rewrite-target: "/$2"
 spec:
   tls:
   - hosts:
