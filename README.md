@@ -257,13 +257,13 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: "/$1"
 spec:
   rules:
-  - host: formiodev.<YOUR_DNS>
+  - host: formio<YOUR_DNS>
     http:
       paths:
       - backend:
           serviceName: formio
           servicePort: 80
-        path: /
+        path: /(.*)$
       - backend:
           serviceName: formio-files
           servicePort: 4005
@@ -284,27 +284,27 @@ echo '
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: formiodev
+  name: formio
   annotations: 
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
-    nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token, x-allow, x-expire"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token, x-allow, x-expire, x-file-token, range, range-unit"
     kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/rewrite-target: "/$1"
 spec:
   tls:
   - hosts:
-    - formiodev.<YOUR_DNS>
+    - formio<YOUR_DNS>
     secretName: aks-ingress-tls
   rules:
-  - host: formiodev.<YOUR_DNS>
+  - host: formio<YOUR_DNS>
     http:
       paths:
       - backend:
           serviceName: formio
           servicePort: 80
-        path: /
+        path: /(.*)$
       - backend:
           serviceName: formio-files
           servicePort: 4005
