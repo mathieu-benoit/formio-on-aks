@@ -243,7 +243,7 @@ helm repo update stable
 helm install -n formio-ingress stable/nginx-ingress
     
 # Create a dedicated Ingress making the binding between your Service and the this Nginx Ingress Controller
-kubectl create -f - <<EOF
+echo '
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -254,7 +254,7 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
     nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token, x-allow, x-expire"
     kubernetes.io/ingress.class: "nginx"
-    nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+    nginx.ingress.kubernetes.io/rewrite-target: "/$1"
 spec:
   rules:
   - host: formiodev.<YOUR_DNS>
@@ -268,7 +268,7 @@ spec:
           serviceName: formio-files
           servicePort: 4005
         path: /files/(.*)$
-EOF
+' | kubectl create -f -
 ```
 
 ## Setup HTTPS
@@ -280,7 +280,7 @@ kubectl create secret tls aks-ingress-tls \
     --cert aks-ingress-tls.crt
 
 # Update the previous Ingress definition by adding the TLS section
-kubectl create -f - <<EOF
+echo '
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -291,7 +291,7 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
     nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token, x-allow, x-expire"
     kubernetes.io/ingress.class: "nginx"
-    nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+    nginx.ingress.kubernetes.io/rewrite-target: "/$1"
 spec:
   tls:
   - hosts:
@@ -309,7 +309,7 @@ spec:
           serviceName: formio-files
           servicePort: 4005
         path: /files/(.*)$
-EOF
+' | kubectl apply -f -
 ```
 
 You could now test this setup by following those instructions: https://docs.microsoft.com/azure/aks/ingress-own-tls#test-the-ingress-configuration
