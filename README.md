@@ -237,13 +237,13 @@ kubectl expose deployment formio-server \
 ```
 # Install Nginx as Ingress Controller
 # You need to configure Helm prior to run the command below: https://docs.microsoft.com/azure/aks/kubernetes-helm
-helm install stable/nginx-ingress \
-    --set controller.replicaCount=2 \
-    --set controller.nodeSelector."beta\.kubernetes\.io/os"=linux \
-    --set defaultBackend.nodeSelector."beta\.kubernetes\.io/os"=linux
+#Make sure you have the latest version of the stable Helm repo, especially since we need the nginx-ingress version > 0.22.0
+helm repo update stable
+# Install Nginx
+helm install -n formio-ingress stable/nginx-ingress
     
 # Create a dedicated Ingress making the binding between your Service and the this Nginx Ingress Controller
-kubectl apply -f - <<EOF
+echo '
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -252,19 +252,23 @@ metadata:
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
-    nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token, x-allow, x-expire"
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token, x-allow, x-expire, x-file-token, range, range-unit"
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: "/$1"
 spec:
   rules:
-  - host: formiodev.<YOUR_DNS>
+  - host: formio<YOUR_DNS>
     http:
       paths:
       - backend:
           serviceName: formio
           servicePort: 80
-        path: /
-EOF
+        path: /(.*)$
+      - backend:
+          serviceName: formio-files
+          servicePort: 4005
+        path: /files/(.*)$
+' | kubectl create -f -
 ```
 
 ## Setup HTTPS
@@ -276,32 +280,36 @@ kubectl create secret tls aks-ingress-tls \
     --cert aks-ingress-tls.crt
 
 # Update the previous Ingress definition by adding the TLS section
-kubectl apply -f - <<EOF
+echo '
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: formiodev
+  name: formio
   annotations: 
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
-    nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token, x-allow, x-expire"
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/cors-allow-headers: "content-type, cache-control, pragma, x-remote-token, x-allow, x-expire, x-file-token, range, range-unit"
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: "/$1"
 spec:
   tls:
   - hosts:
-    - formiodev.<YOUR_DNS>
+    - formio<YOUR_DNS>
     secretName: aks-ingress-tls
   rules:
-  - host: formiodev.<YOUR_DNS>
+  - host: formio<YOUR_DNS>
     http:
       paths:
       - backend:
           serviceName: formio
           servicePort: 80
-        path: /
-EOF
+        path: /(.*)$
+      - backend:
+          serviceName: formio-files
+          servicePort: 4005
+        path: /files/(.*)$
+' | kubectl apply -f -
 ```
 
 You could now test this setup by following those instructions: https://docs.microsoft.com/azure/aks/ingress-own-tls#test-the-ingress-configuration
