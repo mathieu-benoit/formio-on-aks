@@ -238,7 +238,7 @@ kubectl expose deployment formio-server \
 # Install Nginx as Ingress Controller
 # You need to configure Helm prior to run the command below: https://docs.microsoft.com/azure/aks/kubernetes-helm
 #Make sure you have the latest version of the stable Helm repo, especially since we need the nginx-ingress version > 0.22.0
-helm repo update stable
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 # Install Nginx
 helm install -n formio-ingress stable/nginx-ingress
     
